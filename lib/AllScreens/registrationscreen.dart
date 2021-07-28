@@ -4,6 +4,7 @@ import 'package:flutter/src/material/raised_button.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:uber/AllScreens/loginscreen.dart';
 import 'package:uber/AllScreens/mainscreen.dart';
+import 'package:uber/AllWidgets/progressDialog.dart';
 import 'package:uber/main.dart';
 
 class RegistrationScreen extends StatelessWidget
@@ -176,11 +177,23 @@ class RegistrationScreen extends StatelessWidget
 
   void registerNewUser(BuildContext context) async
   {
+
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context)
+        {
+          return ProgressDialog("Registering, Please wait....",);
+        }
+    );
+
+
     final firebaseUser = (await _firebaseAuth
         .createUserWithEmailAndPassword(
         email: emailTextEditingController.text,
         password: passwordTextEditingController.text).catchError(
             (errMsg) {
+              Navigator.pop(context);
               displayToastMessage("Error: " + errMsg.toString(), context);
             })).user;
 
@@ -200,6 +213,7 @@ class RegistrationScreen extends StatelessWidget
       }
     else
       {
+        Navigator.pop(context);
         displayToastMessage("New User Account has not been created", context);
       }
   }

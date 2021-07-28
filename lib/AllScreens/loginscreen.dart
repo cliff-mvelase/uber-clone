@@ -4,6 +4,7 @@ import 'package:flutter/src/material/raised_button.dart';
 import 'package:uber/AllScreens/mainscreen.dart';
 import 'package:uber/AllScreens/registrationscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uber/AllWidgets/progressDialog.dart';
 import 'package:uber/main.dart';
 
 class LoginScreen extends StatelessWidget
@@ -129,11 +130,22 @@ class LoginScreen extends StatelessWidget
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   void loginAndAuthenticateUser(BuildContext context) async{
+    
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context)
+          {
+             return ProgressDialog("Authenticating, Please wait....");
+          }
+        );
+
     final firebaseUser = (await _firebaseAuth
         .signInWithEmailAndPassword(
         email: emailTextEditingController.text,
         password: passwordTextEditingController.text).catchError(
             (errMsg) {
+              Navigator.pop(context);
           displayToastMessage("Error: " + errMsg.toString(), context);
         })).user;
 
@@ -147,6 +159,7 @@ class LoginScreen extends StatelessWidget
         }
         else
         {
+          Navigator.pop(context);
           _firebaseAuth.signOut();
           displayToastMessage("No record found. Please check your credentials.", context);
         }
@@ -154,7 +167,7 @@ class LoginScreen extends StatelessWidget
     }
     else
     {
-
+      Navigator.pop(context);
       displayToastMessage("Error. Cannot be signed in", context);
     }
   }
