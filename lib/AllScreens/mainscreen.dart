@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber/AllWidgets/Divider.dart';
 
@@ -16,9 +17,24 @@ class MainScreen extends StatefulWidget
 class _MainScreenState extends State<MainScreen> {
 
   Completer<GoogleMapController> _controllerGoogleMap = Completer();
-  late GoogleMapController newGoogleMapController;
+   late GoogleMapController newGoogleMapController;
 
   GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  late Position currentPosition;
+  var geoLocator = Geolocator();
+  double bottomPaddingOfMap = 0 ;
+
+  void locatePosition() async
+  {
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    currentPosition = position;
+    
+    LatLng latLongPosition =LatLng(position.latitude, position.longitude);
+    
+    CameraPosition cameraPosition = new CameraPosition(target: latLongPosition, zoom: 14);
+    newGoogleMapController.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+  }
 
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -85,13 +101,23 @@ class _MainScreenState extends State<MainScreen> {
       body: Stack(
         children: [
           GoogleMap(
-              mapType: MapType.normal,
-              myLocationButtonEnabled: true,
-              initialCameraPosition: _kGooglePlex,
+             padding: EdgeInsets.only(bottom: bottomPaddingOfMap),
+             mapType: MapType.normal,
+             myLocationButtonEnabled: true,
+             initialCameraPosition: _kGooglePlex,
+             myLocationEnabled: true,
+             zoomGesturesEnabled: true,
+             zoomControlsEnabled: true,
              onMapCreated: (GoogleMapController controller)
              {
                _controllerGoogleMap.complete();
                 newGoogleMapController = controller;
+
+                setState(() {
+                  bottomPaddingOfMap = 265.0;
+                });
+
+               locatePosition();
              },
           ),
 
@@ -133,7 +159,7 @@ class _MainScreenState extends State<MainScreen> {
               right: 0,
               bottom: 0,
               child: Container(
-                height: 320.0,
+                height: 300.0,
                 decoration: BoxDecoration(
                   color:  Colors.white,
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
